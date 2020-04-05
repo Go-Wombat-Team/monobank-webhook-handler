@@ -1,0 +1,18 @@
+# this is an official Python runtime, used as the parent image
+FROM python:3.8-slim-buster
+
+## install dependencies
+RUN apt-get update && apt-get install -y libpq-dev gcc
+
+# set the working directory in the container to /app
+WORKDIR /app
+
+# add the current directory to the container as /app
+ADD ./subscriber.py /app
+
+# execute everyone's favorite pip command, pip install -r
+RUN pip install --trusted-host pypi.python.org redis psycopg2 peewee
+RUN apt-get autoremove -y gcc
+
+# execute the Flask app
+CMD ["python", "subscriber.py"]
