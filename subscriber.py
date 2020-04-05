@@ -2,20 +2,23 @@ import time
 import datetime
 import json
 import redis
+import os
 from peewee import PostgresqlDatabase, Model, CharField, BooleanField, IntegerField, SmallIntegerField, DateTimeField
 
 # Connect to a Postgres database.
-db = PostgresqlDatabase('postgres', user='postgres', password='secret', 
+db = PostgresqlDatabase('postgres', user='postgres', password=os.environ.get('POSTGRES_PASSWORD'), 
                         host='db', port=5432)
 
 class BaseModel(Model):
+    created_at = DateTimeField(default=datetime.datetime.now)
+
     class Meta:
         database = db
 
 class Transaction(BaseModel):
     transaction_id = CharField(unique=True)
-    transaction_account = CharField()
-    transaction_time = DateTimeField()
+    transaction_account = CharField(index=True)
+    transaction_time = DateTimeField(index=True)
     description = CharField()
     mcc = SmallIntegerField()
     hold = BooleanField(default=False)
