@@ -1,0 +1,50 @@
+version: '3'
+services:
+    redis:
+        image: redis:buster
+        ports:
+            - 6379:6379
+        volumes:
+            - ./config/redis.conf:/redis.conf
+        command: [ "redis-server", "/redis.conf" ]
+        networks:
+            - backend
+    
+    db:
+        image: postgres:alpine
+        environment:
+            POSTGRES_PASSWORD: Yiy9fie6
+        volumes:
+            - db-data:/var/lib/postgresql/data
+        networks:
+            - backend
+
+    index:
+        build:
+            context: .
+            dockerfile: ./dockerfiles/Dockerfile.index
+        ports:
+            - "8000:8000"
+        networks:
+            - backend
+        depends_on:
+            - redis
+    
+    subscriber:
+        build:
+            context: .
+            dockerfile: ./dockerfiles/Dockerfile.subscriber
+        networks:
+            - backend
+        environment:
+            POSTGRES_PASSWORD: Yiy9fie6
+        depends_on:
+            - redis
+            - db
+        restart: on-failure
+
+networks:
+    backend:
+volumes:
+    db-data:
+        driver: local
